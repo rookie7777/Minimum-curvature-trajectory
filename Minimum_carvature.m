@@ -2,45 +2,45 @@ function [H,f]=Minimum_carvature()
 load 'track.mat';
 load 'body.mat';
 [c,~]=size(track_x);
-width = track_w / 2;  % Ò»°ëÂ·¿í
-%% ²åÖµ
-[insert_track_x,insert_track_y,insert_c]=insert_ref(track_x,track_y,c);  %ÏßĞÔ²åÖµ
-[spline_track_x,spline_track_y,spline_c]=spline_ref(insert_track_x,insert_track_y,insert_c);%Èı´ÎÑùÌõ²åÖµ
+width = track_w / 2;  % ä¸€åŠè·¯å®½
+%% æ’å€¼
+[insert_track_x,insert_track_y,insert_c]=insert_ref(track_x,track_y,c);  %çº¿æ€§æ’å€¼
+[spline_track_x,spline_track_y,spline_c]=spline_ref(insert_track_x,insert_track_y,insert_c);%ä¸‰æ¬¡æ ·æ¡æ’å€¼
 
-%% ¸ù¾İ²îÖµÖ®ºóµÄµã£¬ÖØĞÂ¼ÆËãÒ»½×µ¼Êı
+%% æ ¹æ®å·®å€¼ä¹‹åçš„ç‚¹ï¼Œé‡æ–°è®¡ç®—ä¸€é˜¶å¯¼æ•°
 [Ds_x,Ds_y,P_x,P_y]=D_track(spline_track_x,spline_track_y,spline_c);
 
-%% ¼ÆËãµ¥Î»ÏòÁ¿
+%% è®¡ç®—å•ä½å‘é‡
 [vector]=get_vec(Ds_x,Ds_y,spline_c);
 
-%% Éú³ÉÂ·¿íÏŞÖÆ
+%% ç”Ÿæˆè·¯å®½é™åˆ¶
 x_b=zeros(spline_c,2);
 y_b=zeros(spline_c,2);
 for n=1:spline_c   
-    x_b(n,1) = spline_track_x(n) + width* vector(n,2);%×ó²à±ß½ç
+    x_b(n,1) = spline_track_x(n) + width* vector(n,2);%å·¦ä¾§è¾¹ç•Œ
     y_b(n,1) = spline_track_y(n) - width * vector(n,1);
-    x_b(n,2) = spline_track_x(n)- width* vector(n,2);%ÓÒ²à±ß½ç
+    x_b(n,2) = spline_track_x(n)- width* vector(n,2);%å³ä¾§è¾¹ç•Œ
     y_b(n,2) = spline_track_y(n) + width * vector(n,1);
 end
 
-%% Éú³ÉA¾ØÕó 
+%% ç”ŸæˆAçŸ©é˜µ 
 [A]=buid_A(spline_c); 
 
-%% »ñµÃ Mx  My
+%% è·å¾— Mx  My
 [Mx,My]=get_M(vector);
 
-a=[0 0 1 0]; % 1µÄÎ»ÖÃÈ¡¾öÓÚÌáÈ¡ÄÄ¸öÏµÊı
+a=[0 0 1 0]; % 1çš„ä½ç½®å–å†³äºæå–å“ªä¸ªç³»æ•°
 [A_exc]=get_Aexc(spline_c,a);
-%% ¼ÆËãPxx Pxy Pyy
+%% è®¡ç®—Pxx Pxy Pyy
 [Pxx,Pxy,Pyy]=get_P(Ds_x,Ds_y,spline_c);
 
-%% ¼ÆËãTc Tnx Tny
+%% è®¡ç®—Tc Tnx Tny
 [Tc,Tnx,Tny]=get_T(A_exc,A,Mx,My);
 
-%% ¼ÆËã Hx Hxy Hy  ºÍ fx fxy fy
+%% è®¡ç®— Hx Hxy Hy  å’Œ fx fxy fy
 [H,f]=calculate_Hf(Tnx,Tny,Pxx,Pxy,Pyy,Tc,P_x,P_y);
 
-%% ²»µÈÊ½Ô¼Êø
+%% ä¸ç­‰å¼çº¦æŸ
 [Ek,k]=inequation(Ds_y,Ds_x,Tc,Tny,Tnx,P_x,P_y,spline_c);
 
 delta_k=1;
@@ -49,7 +49,7 @@ while delta_k>0.05
 QP_track_x=track_x+vector(:,2).*alpha;
 QP_track_y=track_y-vector(:,1).*alpha;
 [k_last_max,loca_last]=Get_Max_K(track_x,track_y,spline_c,Tc);
-[H,f,Ek,k]=upd_cons(QP_track_x,QP_track_y,spline_c,A_exc,A); %×´Ì¬¸üĞÂ
+[H,f,Ek,k]=upd_cons(QP_track_x,QP_track_y,spline_c,A_exc,A); %çŠ¶æ€æ›´æ–°
 [k_current_max,loca_current]=Get_Max_K(QP_track_x,QP_track_y,spline_c,Tc);
 delta_k=abs(k_current_max-k_last_max);
 track_x=QP_track_x;
@@ -59,7 +59,7 @@ hold on
 end
 
 
-%% »­Í¼
+%% ç”»å›¾
 figure(1)
 plot(spline_track_x,spline_track_y,'--r')
 hold on
@@ -74,7 +74,7 @@ end
 
 
 
-%% +++++++++++++++++++×Óº¯Êı++++++++++++++++++++++++++++++++
+%% +++++++++++++++++++å­å‡½æ•°++++++++++++++++++++++++++++++++
 %% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function [insert_track_x,insert_track_y,insert_c]=insert_ref(track_x,track_y,Dimension)
@@ -86,7 +86,7 @@ for i=1:Dimension-1
     if Distance>len
         delta_x=track_x(i+1)-track_x(i);
         delta_y=track_y(i+1)-track_y(i);
-        num=ceil(Distance/len); %²å³É¼¸¶Î
+        num=ceil(Distance/len); %æ’æˆå‡ æ®µ
         temp_track_x=zeros(num,1);
         temp_track_y=zeros(num,1);
         
@@ -107,42 +107,50 @@ insert_track_y=[insert_track_y;track_y(i+1)];
 [insert_c,~]=size(insert_track_x);
 end
 
-%% Èı´ÎÑùÌõ²åÖµ
-function [spline_track_x,spline_track_y,spline_c]=spline_ref(insert_track_x,insert_track_y,insert_c)
-len=100;
-spline_track_x=[];
-spline_track_y=[];
+%% ä¸‰æ¬¡æ ·æ¡æ’å€¼
+function [x_out,y_out,spline_c]=spline_ref(insert_track_x,insert_track_y,insert_c)
+tolerance=3;
+x_out = [];
+y_out = [];
 [A]=buid_A(insert_c);
 [P_x,P_y]=get_P_(insert_track_x,insert_track_y,insert_c);
 para_x=A\P_x;
 para_y=A\P_y;
-loca=0;
-for i=1:insert_c-1
-    
-    Distance=sqrt((insert_track_x(i+1)-insert_track_x(i))^2+(insert_track_y(i+1)-insert_track_y(i))^2);
-    if Distance > len
-        num=ceil(Distance/len);
-        temp_x=zeros(num,1);
-        temp_y=zeros(num,1);
-        for n=1:num
-            t=(1/num)*(n-1);
-            temp_x(n,1)=para_x(loca+1)+para_x(loca+2)*t+para_x(loca+3)*t^2+para_x(loca+4)*t^3;
-            temp_y(n,1)=para_y(loca+1)+para_y(loca+2)*t+para_y(loca+3)*t^2+para_x(loca+4)*t^3;
+base = zeros(1,4);
+base(3) = 2;
+select_c = kron(eye(insert_c),base);
+Mx = select_c * para_x;
+My = select_c * para_y;
+for i = 1:insert_c - 1
+    len = sqrt((insert_track_x(i + 1) - insert_track_x(i))^2 + (insert_track_y(i + 1) - insert_track_y(i))^2);
+    if len >= tolerance
+        n = ceil(len / tolerance);
+        temp_x = zeros(n,1);
+        temp_y = zeros(n,1);
+        for k = 1:n
+            val = (k - 1) / n;
+            temp_x(k) = Mx(i) * (1 - val)^3 / 6 ...
+                + Mx(i + 1) * (val - 0)^3 / 6 ...
+                + (insert_track_x(i) - Mx(i) / 6) * (1 - val) ...
+                + (insert_track_x(i + 1) - Mx(i + 1) / 6) * (val - 0);
+            temp_y(k) = My(i) * (1 - val)^3 / 6 ...
+                + My(i + 1) * (val - 0)^3 / 6 ...
+                + (insert_track_y(i) - My(i) / 6) * (1 - val) ...
+                + (insert_track_y(i + 1) - My(i + 1) / 6) * (val - 0);
         end
-        spline_track_x=[spline_track_x;temp_x];
-        spline_track_y=[spline_track_y;temp_y];
+        x_out = [x_out;temp_x];
+        y_out = [y_out;temp_y];
     else
-        spline_track_x=[spline_track_x;insert_track_x(i)];
-        spline_track_y=[spline_track_y;insert_track_y(i)];
+        x_out = [x_out;insert_track_x(i)];
+        y_out = [y_out;insert_track_y(i)];
     end
-    loca=loca+4;
 end
-spline_track_x=[spline_track_x;insert_track_x(i+1)];
-spline_track_y=[spline_track_y;insert_track_y(i+1)];
-[spline_c,~]=size(spline_track_x);
+x_out = [x_out;insert_track_x(i + 1)];
+y_out = [y_out;insert_track_y(i + 1)];
+[spline_c,~]=size(x_out);
 end
 
-%% ¼ÆËãÒ»½×µ¼Êı
+%% è®¡ç®—ä¸€é˜¶å¯¼æ•°
 function [Ds_x,Ds_y,P_x,P_y]=D_track(track_x,track_y,c)
 a=[0 1 0 0];
 [A_exc]=get_Aexc(c,a);
@@ -153,7 +161,7 @@ Ds_x=A_exc*(A \ P_x);
 Ds_y=A_exc*(A \ P_y);
 end
 
-%% ¼ÆËãµ¥Î»ÏòÁ¿
+%% è®¡ç®—å•ä½å‘é‡
 function [vector]=get_vec(Ds_x,Ds_y,c)
    vector=zeros(c,2);
    for i=1:c
@@ -163,7 +171,7 @@ function [vector]=get_vec(Ds_x,Ds_y,c)
    end
 end
  
- %% Éú³ÉA¾ØÕó
+ %% ç”ŸæˆAçŸ©é˜µ
  function [A]=buid_A(c)
 A_cell=cell(c,c);
 B_cell=cell(c-1,c-1);
@@ -216,7 +224,7 @@ B_cell=[C_cell,B_cell;D_cell];
 B=cell2mat(B_cell);
 A=A+B;
  end
- %% »ñµÃ¾ØÕóP_x P_y
+ %% è·å¾—çŸ©é˜µP_x P_y
  function[P_x,P_y]=get_P_(track_x,track_y,c)
  P_x_cell=cell(c,1);
  
@@ -245,20 +253,20 @@ end
  P_y=cell2mat(P_y_cell);
  end
 
- %%  »ñµÃM¾ØÕó
+ %%  è·å¾—MçŸ©é˜µ
  function [Tc,Tnx,Tny]=get_T(A_exc,A,Mx,My)
 Tc=2*A_exc/A;
 Tnx=(2*A_exc/A)*Mx;
 Tny=(2*A_exc/A)*My;
 end
 
-%% »ñÈ¡ Mx My ¾ØÕó
+%% è·å– Mx My çŸ©é˜µ
 function [Mx,My]=get_M(vector)
 [c,~]=size(vector);
         Mx_cell=cell(c,1);
          
 for i=1:c 
-    A=zeros(4,c);%¼ÆËãMx¾ØÕó
+    A=zeros(4,c);%è®¡ç®—MxçŸ©é˜µ
     if i<c-1
         A(1,i)=vector(i,2);
         A(2,i+1)=vector(i+1,2);
@@ -270,7 +278,7 @@ for i=1:c
 end
 Mx=cell2mat(Mx_cell);
 
-My_cell=cell(c,1); %¼ÆËãMy¾ØÕó
+My_cell=cell(c,1); %è®¡ç®—MyçŸ©é˜µ
 for i=1:c
     A=zeros(4,c);
     if i<c-1
@@ -285,7 +293,7 @@ end
 My=cell2mat(My_cell);
 end
 
-%% ÌáÈ¡¾ØÕó
+%% æå–çŸ©é˜µ
 function [A_exc]=get_Aexc(c,a)
 A_exc_cell=cell(c,c);
 
@@ -302,7 +310,7 @@ end
 A_exc=cell2mat(A_exc_cell);
 end
 
-%% Pº¯Êı
+%% På‡½æ•°
 function [Pxx,Pxy,Pyy]=get_P(Ds_x,Ds_y,c)
 Pxx=zeros(c,c);
 Pxy=zeros(c,c);
@@ -354,7 +362,7 @@ for a=1:c
 end
 end
 
- %% ²»µÈÊ½Ô¼Êø
+ %% ä¸ç­‰å¼çº¦æŸ
 function [Ek,k]=inequation(Ds_y,Ds_x,Tc,Tny,Tnx,P_x,P_y,c)
 const=ones(c,1);
 K_bound=0.12*const;
@@ -363,12 +371,12 @@ Kref=Q_y*Tc*P_y-Q_x*Tc*P_x;
 K_upper_bound=K_bound-Kref;
 K_lower_bound=K_bound+Kref;
 
-%Az<=b ÖĞ A=Ek,b=k;
+%Az<=b ä¸­ A=Ek,b=k;
 k=[K_upper_bound;K_lower_bound];
 Ek=[Q_y*Tny-Q_y*Tnx;-Q_y*Tny+Q_y*Tnx];
 end
 
-%% ×´Ì¬¸üĞÂ
+%% çŠ¶æ€æ›´æ–°
 function [H,f,Ek,k]=upd_cons(track_x,track_y,c,A_exc,A)
 [Ds_x,Ds_y,P_x,P_y]=D_track(track_x,track_y,c);
 [vector]=get_vec(Ds_x,Ds_y,c);
@@ -379,7 +387,7 @@ function [H,f,Ek,k]=upd_cons(track_x,track_y,c,A_exc,A)
 [Ek,k]=inequation(Ds_y,Ds_x,Tc,Tny,Tnx,P_x,P_y,c);
 end
 
-%% ÓÅ»¯
+%% ä¼˜åŒ–
  function [alpha]=optimize(f,H,Ek,k,body,c)
  lb=(-3+body.Wb/2000)*ones(c,1);
  ub=(3-body.Wb/2000)*ones(c,1);
@@ -387,7 +395,7 @@ end
  end
  
  
- %% ¼ÆËã×î´óÇúÂÊ
+ %% è®¡ç®—æœ€å¤§æ›²ç‡
 function [K_QP_MAX,location]=Get_Max_K(track_x,track_y,c,Tc)  
 [Ds_x,Ds_y,P_x,P_y]=D_track(track_x,track_y,c);
 [Q_y,Q_x]=get_Qy(Ds_y,Ds_x,c);
